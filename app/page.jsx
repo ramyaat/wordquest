@@ -240,12 +240,10 @@ export default function ProfilePage() {
               <div style={{ display:'flex', flexWrap:'wrap', gap:'8px' }}>
                 {AVATARS.map(a => (
                   <button key={a.e} type="button" onClick={() => setNewAvatar(a.e)} title={a.label}
-                    style={{ fontSize:'1.6rem', width:'48px', height:'54px', borderRadius:'12px', border:'2px solid',
+                    style={{ fontSize:'1.8rem', width:'48px', height:'48px', borderRadius:'12px', border:'2px solid',
                       borderColor: a.e === newAvatar ? 'var(--blue)' : '#ddd',
-                      background: a.e === newAvatar ? '#e8f4ff' : '#fff', cursor:'pointer', transition:'all .15s',
-                      display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'1px' }}>
-                    <span>{a.e}</span>
-                    <span style={{ fontSize:'.45rem', color:'#888', fontWeight:600, lineHeight:1 }}>{a.label}</span>
+                      background: a.e === newAvatar ? '#e8f4ff' : '#fff', cursor:'pointer', transition:'all .15s' }}>
+                    {a.e}
                   </button>
                 ))}
               </div>
