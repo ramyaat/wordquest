@@ -16,9 +16,18 @@ function speak(word) {
   speechSynthesis.speak(u)
 }
 
+let _audioCtx = null
+function getAudioCtx() {
+  if (!_audioCtx || _audioCtx.state === 'closed') {
+    _audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+  }
+  if (_audioCtx.state === 'suspended') _audioCtx.resume()
+  return _audioCtx
+}
+
 function playSound(type) {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)()
+    const ctx = getAudioCtx()
     const o = ctx.createOscillator(), g = ctx.createGain()
     o.connect(g); g.connect(ctx.destination)
     if (type === 'correct') {
@@ -330,15 +339,17 @@ export default function Game() {
     return (
       <div style={{ maxWidth: '680px', margin: '0 auto', padding: '16px' }} className="screen">
         {/* Top bar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 16px rgba(0,0,0,.08)', marginBottom: '18px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '1.5rem' }}>{avatar}</span>
-            <span style={{ fontWeight: 800, color: 'var(--navy)' }}>{username}</span>
-          </div>
-          <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
-            <span style={{ fontWeight: 700 }}>🔥 {gs.streak}</span>
-            <span style={{ fontWeight: 700 }}>⭐ {gs.totalXP}</span>
+        <div style={{ background: '#fff', borderRadius: '16px', boxShadow: '0 4px 16px rgba(0,0,0,.08)', marginBottom: '18px', padding: '10px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '1.4rem' }}>{avatar}</span>
+              <span style={{ fontWeight: 800, color: 'var(--navy)', fontSize: '.95rem' }}>{username}</span>
+            </div>
             <span className="level-badge">Lvl {level}</span>
+          </div>
+          <div style={{ display: 'flex', gap: '16px', marginTop: '6px', fontSize: '.88rem', fontWeight: 700, color: '#555' }}>
+            <span>🔥 {gs.streak} streak</span>
+            <span>⭐ {gs.totalXP} XP</span>
           </div>
         </div>
 
@@ -358,7 +369,7 @@ export default function Game() {
         {/* Day grid */}
         <div className="card">
           <div style={{ fontWeight: 800, color: 'var(--navy)', marginBottom: '14px' }}>📅 20-Day Journey</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: '10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '10px' }}>
             {Array.from({ length: 20 }, (_, i) => {
               const d = i + 1
               const done = gs.completedDays?.[d]

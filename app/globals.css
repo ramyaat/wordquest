@@ -14,7 +14,17 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: #3c3c3c; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: #3c3c3c;
+  overflow-x: hidden; -webkit-text-size-adjust: 100%; }
+
+/* Disable sticky hover on touch devices */
+@media (hover: none) {
+  .profile-card:hover { transform: none; box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+  .day-tile:hover { transform: none; box-shadow: none; }
+  .choice:hover { border-color: #ddd; background: #fff; }
+  .btn-green:hover { filter: none; }
+  .review-item:hover { box-shadow: none; }
+}
 
 .btn { border: none; border-radius: 12px; padding: 13px 26px; font-size: 1rem;
   font-weight: 700; cursor: pointer; transition: transform .1s; }
