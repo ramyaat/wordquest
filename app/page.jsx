@@ -44,46 +44,54 @@ const AVATARS = [
 ]
 
 // 4-box PIN input
+// The invisible input covers the full area so tapping anywhere opens the keyboard directly.
 function PINInput({ value, onChange, disabled, autoFocus }) {
-  const boxes = useRef([])
-  const chars = value.padEnd(4, ' ').slice(0, 4).split('')
-
-  function handleKey(i, e) {
-    if (e.key === 'Backspace') {
-      onChange(value.slice(0, i) + value.slice(i + 1))
-      if (i > 0) setTimeout(() => boxes.current[i - 1]?.focus(), 0)
-      return
-    }
-    if (!/^\d$/.test(e.key)) return
-    const next = (value.slice(0, i) + e.key + value.slice(i + 1)).slice(0, 4)
-    onChange(next)
-    if (i < 3) setTimeout(() => boxes.current[i + 1]?.focus(), 0)
-  }
-
-  function handlePaste(e) {
-    const p = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 4)
-    if (p) { onChange(p); setTimeout(() => boxes.current[Math.min(p.length, 3)]?.focus(), 0) }
-    e.preventDefault()
-  }
+  const hiddenRef = useRef(null)
 
   useEffect(() => {
-    if (autoFocus) setTimeout(() => boxes.current[0]?.focus(), 50)
+    if (autoFocus) setTimeout(() => hiddenRef.current?.focus(), 50)
   }, [autoFocus])
 
   return (
-    <div style={{ display:'flex', gap:'10px', justifyContent:'center', margin:'18px 0' }}>
-      {chars.map((ch, i) => (
-        <input key={i} ref={el => boxes.current[i] = el}
-          type="password" inputMode="numeric" maxLength={1}
-          value={ch.trim()} disabled={disabled}
-          onChange={() => {}} onKeyDown={e => handleKey(i, e)} onPaste={handlePaste}
-          onFocus={() => boxes.current[i]?.select()}
-          style={{ width:'52px', height:'60px', textAlign:'center', fontSize:'1.6rem', fontWeight:800,
-            border:'2px solid', borderRadius:'14px', outline:'none', fontFamily:'inherit',
-            borderColor: ch.trim() ? 'var(--blue)' : '#ddd',
-            background: ch.trim() ? '#e8f4ff' : '#fff',
-            opacity: disabled ? 0.6 : 1 }} />
-      ))}
+    <div style={{ position:'relative', margin:'18px 0', height:'60px' }}>
+      {/* Visual boxes — rendered first, sit behind the input */}
+      <div style={{ display:'flex', gap:'10px', justifyContent:'center', height:'100%' }}>
+        {[0,1,2,3].map(i => {
+          const filled = i < value.length
+          const active = i === value.length && !disabled
+          return (
+            <div key={i} style={{
+              width:'52px', height:'60px', display:'flex', alignItems:'center', justifyContent:'center',
+              fontSize:'2rem', fontWeight:800, border:'2px solid', borderRadius:'14px',
+              borderColor: active || filled ? 'var(--blue)' : '#ddd',
+              background: filled ? '#e8f4ff' : '#fff',
+              boxShadow: active ? '0 0 0 3px rgba(28,176,246,.25)' : 'none',
+              transition: 'all .15s', color:'var(--navy)',
+            }}>
+              {filled ? '●' : active ? <span style={{ width:'2px', height:'28px', background:'var(--blue)', display:'inline-block', animation:'pinBlink 1s step-end infinite' }} /> : ''}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Invisible input stretches over the full area.
+          Tapping anywhere = direct tap on the input = keyboard opens every time. */}
+      <input
+        ref={hiddenRef}
+        type="tel"
+        value={value}
+        onChange={e => onChange(e.target.value.replace(/\D/g, '').slice(0, 4))}
+        maxLength={4}
+        disabled={disabled}
+        autoComplete="one-time-code"
+        style={{
+          position:'absolute', top:0, left:0, width:'100%', height:'100%',
+          opacity:0, cursor:'pointer',
+          fontSize:'16px', /* prevents iOS auto-zoom */
+          zIndex:2,
+        }}
+      />
+      <style>{`@keyframes pinBlink { 0%,100%{opacity:1} 50%{opacity:0} }`}</style>
     </div>
   )
 }
