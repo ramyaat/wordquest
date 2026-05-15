@@ -45,12 +45,20 @@ const AVATARS = [
 
 // 4-box PIN input
 // The invisible input covers the full area so tapping anywhere opens the keyboard directly.
-function PINInput({ value, onChange, disabled, autoFocus }) {
-  const hiddenRef = useRef(null)
+// inputRef: lets the parent hold a ref to the hidden input (for auto-advancing focus)
+// onComplete: called when all 4 digits are entered
+function PINInput({ value, onChange, disabled, autoFocus, inputRef, onComplete }) {
+  const localRef = useRef(null)
+  const hiddenRef = inputRef || localRef
 
   useEffect(() => {
     if (autoFocus) setTimeout(() => hiddenRef.current?.focus(), 50)
   }, [autoFocus])
+
+  // Auto-advance: call onComplete when 4 digits filled
+  useEffect(() => {
+    if (value.length === 4) onComplete?.()
+  }, [value])
 
   return (
     <div style={{ position:'relative', margin:'18px 0', height:'60px' }}>
@@ -108,6 +116,9 @@ export default function ProfilePage() {
   const [loginPIN, setLoginPIN]       = useState('')
   const [loginError, setLoginError]   = useState('')
   const [loginBusy, setLoginBusy]     = useState(false)
+
+  // Ref to auto-advance focus from PIN → Confirm PIN
+  const confirmPINRef = useRef(null)
 
   // Signup state
   const [newName, setNewName]     = useState('')
@@ -263,14 +274,16 @@ export default function ProfilePage() {
                 Choose a 4-digit PIN
               </label>
               <p style={{ fontSize:'.8rem', color:'#999', marginBottom:'0' }}>You&apos;ll use this every time you log in</p>
-              <PINInput value={newPIN} onChange={setNewPIN} disabled={saving} />
+              <PINInput value={newPIN} onChange={setNewPIN} disabled={saving}
+                onComplete={() => confirmPINRef.current?.focus()} />
             </div>
 
             <div style={{ marginBottom:'16px' }}>
               <label style={{ fontWeight:600, fontSize:'.9rem', color:'#555', display:'block', marginBottom:'4px' }}>
                 Confirm PIN
               </label>
-              <PINInput value={confirmPIN} onChange={setConfirmPIN} disabled={saving} />
+              <PINInput value={confirmPIN} onChange={setConfirmPIN} disabled={saving}
+                inputRef={confirmPINRef} />
             </div>
 
             {signupError && <p style={{ color:'var(--red)', fontSize:'.88rem', marginBottom:'10px' }}>{signupError}</p>}
